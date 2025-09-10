@@ -97,13 +97,9 @@ public class GUI extends JFrame{
         bluePanel.add(blueComputer);
         add(bluePanel,BorderLayout.EAST);
 
-
         setVisible(true);
 
-
-
     }
-
 
     public static void main(String[] args){
        SwingUtilities.invokeLater(GUI::new);

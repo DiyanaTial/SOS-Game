@@ -1,4 +1,4 @@
-package sprint1.parta;
+package sprint0.parta;
 
 public class Factorial {
 

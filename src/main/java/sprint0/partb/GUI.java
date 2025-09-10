@@ -1,4 +1,4 @@
-package sprint1.partb;
+package sprint0.partb;
 import javax.swing.*;
 import java.awt.*;
 

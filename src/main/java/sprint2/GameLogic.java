@@ -3,7 +3,7 @@ package sprint2;
 public class GameLogic {
     private char[][] board;
     private int size;
-    private boolean isBlueTurn;  // true = Blue, false = Red
+    private boolean isBlueTurn;  // true = Blue, false = Green
     private String gameMode;     // "Simple" or "General"
 
     public GameLogic(int size, String mode) {

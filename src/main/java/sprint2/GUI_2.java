@@ -85,8 +85,19 @@ public class GUI_2 extends JFrame{
     public void startGame(){
         try {
             int size = Integer.parseInt(boardSize.getText());
+            if (size <= 2) {
+                JOptionPane.showMessageDialog(this, "Please enter a number greater than 2.");
+                return; // stop the game from starting
+            }
+            //error checking for no game mode selected
+            if (!simpleGame.isSelected() && !generalGame.isSelected()) {
+                JOptionPane.showMessageDialog(this, "Please select a game mode before starting.");
+                return;
+            }
+
             // get game mode
             String mode = simpleGame.isSelected() ? "Simple Game" : "General Game";
+
             gameLogic = new GameLogic(size, mode);
 
             boardPanel.removeAll();

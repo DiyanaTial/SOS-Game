@@ -46,6 +46,7 @@ class SimpleModeTest {
     }
 
     @Test
+    // TODO: Fix this (should be green)
     void blueWinsByDiagonal_withLastMoveS() {
         SimpleMode g = new SimpleMode(3);
         // Build diag: place O at (1,1), S at (2,2), then S at (0,0) to complete S-O-S

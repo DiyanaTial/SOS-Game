@@ -32,30 +32,53 @@ public class game_GUI extends JFrame{
     private JLabel greenScoreLabel;
 
     public game_GUI() {
-        setTitle("SOS GAME");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 600);
+        setPreferredSize(new Dimension(1000, 1000));
         setLayout(new BorderLayout());
 
+        /*
+         *** Make UI Look Prettier **
+         * This was done with the help of ChatGPT - Mainly 75%
+         */
+        Font uiFont = new Font("SansSerif", Font.PLAIN, 14);
+        UIManager.put("Label.font", uiFont);
+        UIManager.put("Button.font", uiFont);
+        UIManager.put("RadioButton.font", uiFont);
+        UIManager.put("TextField.font", uiFont);
+        // add padding around main content
+        ((JComponent)getContentPane()).setBorder(BorderFactory.createEmptyBorder(5, 10, 10, 10));
+
         // Top
-        JPanel topPanel = new JPanel();
+        JPanel topPanel = new JPanel(new BorderLayout());
+
+        // For Title
+        JLabel titleLabel = new JLabel("SOS Game", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 20));
+        topPanel.add(titleLabel, BorderLayout.NORTH);
+        JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 5));
+
         simpleMode = new JRadioButton("Simple Game");
         generalMode = new JRadioButton("General Game");
         ButtonGroup gameTypeGroup = new ButtonGroup();
         gameTypeGroup.add(simpleMode);
         gameTypeGroup.add(generalMode);
 
-        topPanel.add(new JLabel("SOS Game"));
-        topPanel.add(simpleMode);
-        topPanel.add(generalMode);
+        controlsPanel.add(simpleMode);
+        controlsPanel.add(generalMode);
 
-        topPanel.add(new JLabel("Board size"));
+        controlsPanel.add(new JLabel("Board size"));
         boardSize = new JTextField("3", 3);
-        topPanel.add(boardSize);
+        controlsPanel.add(boardSize);
 
-        JButton startButton = new JButton("Start Game");
+        JButton startButton = new JButton("Start New Game");
         startButton.addActionListener(e -> startGame());
-        topPanel.add(startButton);
+        controlsPanel.add(startButton);
+        topPanel.add(controlsPanel, BorderLayout.CENTER);
+
+        // Progress bar
+        turnLabel = new JLabel("Current Turn: Blue", SwingConstants.CENTER);
+        topPanel.add(turnLabel, BorderLayout.SOUTH);
+
         add(topPanel, BorderLayout.NORTH);
 
         // Side panels
@@ -66,32 +89,40 @@ public class game_GUI extends JFrame{
 
         // Board panel
         boardPanel = new game_GUI.BoardPanel();
+        boardPanel.setBackground(new Color(245, 245, 245)); // light gray
         add(boardPanel, BorderLayout.CENTER);
 
         // Bottom
         blueScoreLabel = new JLabel("Blue Score: 0");
         greenScoreLabel = new JLabel("Green Score: 0");
-        turnLabel = new JLabel("Current Turn: Blue", SwingConstants.CENTER);
 
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.add(blueScoreLabel, BorderLayout.WEST);
-        bottomPanel.add(turnLabel, BorderLayout.CENTER);
         bottomPanel.add(greenScoreLabel, BorderLayout.EAST);
 
         add(bottomPanel, BorderLayout.SOUTH);
 
+        pack();
+        setLocationRelativeTo(null); // center window
         setVisible(true);
     }
 
     private JPanel createPlayerPanel(String color){
-        JPanel panel = new JPanel(new GridLayout(0,1));
-        panel.add(new JLabel(color + " Player"));
+        JPanel panel = new JPanel(new GridLayout(0,1,0,5));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(Color.LIGHT_GRAY),
+                color + " Player",
+                0, 0,
+                panel.getFont().deriveFont(Font.BOLD)
+        ));
 
         JRadioButton letterS = new JRadioButton("S", true);
         JRadioButton letterO = new JRadioButton("O");
         ButtonGroup group = new ButtonGroup();
         group.add(letterS);
         group.add(letterO);
+
+        panel.add(new JLabel("Letter:"));
         panel.add(letterS);
         panel.add(letterO);
 
@@ -101,6 +132,8 @@ public class game_GUI extends JFrame{
         ButtonGroup typeGroup = new ButtonGroup();
         typeGroup.add(human);
         typeGroup.add(computer);
+
+        panel.add(new JLabel("Player Type:"));
         panel.add(human);
         panel.add(computer);
 
@@ -119,6 +152,22 @@ public class game_GUI extends JFrame{
     }
 
     public void startGame(){
+        // Clearing old game logic when user clicks Start New Game
+        gameLogic = null;
+
+        boardPanel.removeAll();
+        boardPanel.lines.clear();
+        boardPanel.revalidate();
+        boardPanel.repaint();
+
+        blueScoreLabel.setText("Blue Score: 0");
+        greenScoreLabel.setText("Green Score: 0");
+        blueScoreLabel.setVisible(false);
+        greenScoreLabel.setVisible(false);
+
+        turnLabel.setText("Current Turn: -");
+        turnLabel.setForeground(Color.BLACK);
+
         try {
             size = Integer.parseInt(boardSize.getText());
             if (size <= 2) {
@@ -136,8 +185,6 @@ public class game_GUI extends JFrame{
             // add the createPlayers function
             createPlayers();
 
-            boardPanel.removeAll();
-            boardPanel.lines.clear();
             boardPanel.setLayout(new GridLayout(size, size));
 
             // initializing the cells for computer
@@ -148,22 +195,26 @@ public class game_GUI extends JFrame{
                 for (int c = 0; c < size; c++) {
                     JButton cell = new JButton();
                     int row = r, col = c;
-                    cell.setFont(new Font("Arial", Font.BOLD, 18));
+
+                    //tile styling
+                    cell.setFont(new Font("SansSerif", Font.BOLD, 28));
+                    cell.setFocusPainted(false);
+                    cell.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
+                    cell.setBackground(Color.WHITE);
+                    cell.setOpaque(true);
 
                     cells[row][col] = cell;
-
                     cell.addActionListener(e -> handleHumanClick(row, col, cell));
                     boardPanel.add(cell);
                 }
             }
 
             // refresh GUI
-            revalidate();
-            repaint();
-            turnLabel.setText("Current turn: " + gameLogic.getTurnNext());
+            boardPanel.revalidate();
+            boardPanel.repaint();
 
+            updateTurnLabel();
             updateScoreLabels();
-
             maybeComputerMove();
         }
         catch (NumberFormatException e) {
@@ -175,6 +226,9 @@ public class game_GUI extends JFrame{
     private void handleHumanClick(int row, int col, JButton cell) {
         // if game isn't started or already over, ignore the clicks
         if (gameLogic == null || gameLogic.gameOver()){
+            if (boardPanel != null){
+                boardPanel.repaint();
+            }
             return;
         }
 
@@ -214,9 +268,9 @@ public class game_GUI extends JFrame{
         if (!segs.isEmpty()) {
             Color lineColor = blueTurnBefore ? Color.BLUE : Color.GREEN;
             for (int[][] s : segs){
-                Point start = getCellCenter(s[0][0], s[0][1]);
-                Point end = getCellCenter(s[2][0], s[2][1]);
-                boardPanel.addLine(start, end, lineColor);
+                int r1 = s[0][0], c1 = s[0][1];
+                int r2 = s[2][0], c2 = s[2][1];
+                boardPanel.addLine(r1, c1, r2, c2, lineColor);
             }
         }
 
@@ -229,10 +283,14 @@ public class game_GUI extends JFrame{
                     : "Winner: " + gameLogic.getWinner();
             JOptionPane.showMessageDialog(this, message);
             turnLabel.setText("Game Over!");
+            turnLabel.setForeground(Color.BLACK);
+
+            boardPanel.repaint();
+
         }
         else{
             // show next player's turn
-            turnLabel.setText("Current turn: " + gameLogic.getTurnNext());
+            updateTurnLabel();
         }
     }
 
@@ -248,7 +306,7 @@ public class game_GUI extends JFrame{
             return;
         }
 
-        int delay = 2000; // 1 second
+        int delay = 1500; // 1.5 seconds
         Timer aiTimer = new Timer(delay, e -> {
             if (gameLogic == null || gameLogic.gameOver()){
                 ((Timer) e.getSource()).stop();
@@ -311,32 +369,39 @@ public class game_GUI extends JFrame{
 
     // panel that draws lines over the grid
     class BoardPanel extends JPanel {
-        List<game_GUI.SOSLine> lines = new ArrayList<>();
+        List<SOSLine> lines = new ArrayList<>();
 
-        public void addLine(Point start, Point end, Color color){
-            lines.add(new game_GUI.SOSLine(start, end, color));
+        public void addLine(int r1, int c1, int r2, int c2, Color color){
+            lines.add(new SOSLine(r1, c1, r2, c2, color));
             repaint();
         }
 
         @Override
-        public void paint(Graphics g){
-            super.paint(g);
+        protected void paintChildren(Graphics g){
+            super.paintChildren(g);
             Graphics2D g2 = (Graphics2D) g;
             g2.setStroke(new BasicStroke(3));
             // draw ad children
-            for (game_GUI.SOSLine line : lines){
+            for (SOSLine line : lines){
+                Point start = getCellCenter(line.r1, line.c1);
+                Point end = getCellCenter(line.r2, line.c2);
+
                 g2.setColor(line.color);
-                g2.draw(new Line2D.Double(line.start, line.end));
+                g2.draw(new Line2D.Double(start, end));
             }
         }
     }
 
     static class SOSLine{
-        Point start, end;
+        int r1, c1;
+        int r2, c2;
         Color color;
-        public SOSLine(Point start, Point end, Color color){
-            this.start = start;
-            this.end = end;
+
+        public SOSLine(int r1, int c1, int r2, int c2, Color color){
+            this.r1 = r1;
+            this.c1 = c1;
+            this.r2 = r2;
+            this.c2 = c2;
             this.color = color;
         }
     }
@@ -378,6 +443,24 @@ public class game_GUI extends JFrame{
         SwingUtilities.invokeLater(game_GUI::new);
     }
 
+    // helper to update turn label
+    private void updateTurnLabel(){
+        if (gameLogic == null) {
+            turnLabel.setText("Current turn: -");
+            turnLabel.setForeground(Color.BLACK);
+            return;
+        }
+
+        String text = "Current turn: " + gameLogic.getTurnNext();
+        turnLabel.setText(text);
+
+        if (gameLogic.isBlueTurn()){
+            turnLabel.setForeground(new Color(0, 90, 200));
+        }
+        else {
+            turnLabel.setForeground(new Color(0, 140, 0));
+        }
+    }
 }
-// TODO: Fix the lines to be over instead of under.
+
 

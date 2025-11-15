@@ -6,9 +6,9 @@ import java.awt.geom.Line2D;
 import java.util.ArrayList;
 import java.util.List;
 
-public class game_GUI extends JFrame{
+public class GameGUI extends JFrame{
     private JTextField boardSize;
-    private game_GUI.BoardPanel boardPanel;
+    private GameGUI.BoardPanel boardPanel;
     private JLabel turnLabel;
     private JRadioButton simpleMode, generalMode;
     private JRadioButton blueS, blueO, greenS, greenO;
@@ -31,7 +31,7 @@ public class game_GUI extends JFrame{
     private JLabel blueScoreLabel;
     private JLabel greenScoreLabel;
 
-    public game_GUI() {
+    public GameGUI() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(new Dimension(1000, 1000));
         setLayout(new BorderLayout());
@@ -88,7 +88,7 @@ public class game_GUI extends JFrame{
         add(rightPanel, BorderLayout.EAST);
 
         // Board panel
-        boardPanel = new game_GUI.BoardPanel();
+        boardPanel = new GameGUI.BoardPanel();
         boardPanel.setBackground(new Color(245, 245, 245)); // light gray
         add(boardPanel, BorderLayout.CENTER);
 
@@ -440,7 +440,7 @@ public class game_GUI extends JFrame{
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(game_GUI::new);
+        SwingUtilities.invokeLater(GameGUI::new);
     }
 
     // helper to update turn label
@@ -462,5 +462,3 @@ public class game_GUI extends JFrame{
         }
     }
 }
-
-
